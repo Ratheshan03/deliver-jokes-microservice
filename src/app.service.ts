@@ -1,34 +1,29 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Jokes } from './jokes.entity';
 
 @Injectable()
 export class AppService {
-  private jokes = [
-    {
-      type: 'general',
-      content:
-        'Why don’t scientists trust atoms? Because they make up everything!',
-    },
-    {
-      type: 'programming',
-      content:
-        'Why do programmers prefer dark mode? Because the light attracts bugs!',
-    },
-    {
-      type: 'knock-knock',
-      content:
-        'Knock, knock. Who’s there? Control Freak. Con… Okay, now you say, “Control Freak who?”',
-    },
-  ];
+  constructor(
+    @InjectRepository(Jokes)
+    private jokesRepository: Repository<Jokes>,
+  ) {}
 
-  getRandomJoke(type?: string): string {
-    const jokes = type
-      ? this.jokes.filter((joke) => joke.type === type)
-      : this.jokes;
+  async getRandomJoke(type?: string): Promise<string> {
+    const jokes = await this.jokesRepository.find({
+      where: { type, is_moderated: true },
+    });
+    if (jokes.length === 0) return 'No jokes available';
     const randomIndex = Math.floor(Math.random() * jokes.length);
     return jokes[randomIndex].content;
   }
 
-  getJokeTypes(): string[] {
-    return [...new Set(this.jokes.map((joke) => joke.type))];
+  async getJokeTypes(): Promise<string[]> {
+    const jokes = await this.jokesRepository.find({
+      select: ['type'],
+      where: { is_moderated: true },
+    });
+    return [...new Set(jokes.map((joke) => joke.type))];
   }
 }
