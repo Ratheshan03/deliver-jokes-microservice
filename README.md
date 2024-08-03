@@ -48,7 +48,7 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-# .env variables
+### Example .env variables
  - PORT=3000
  - DB_HOST=mysql_db
  - DB_PORT=3306
