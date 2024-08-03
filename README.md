@@ -48,13 +48,13 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-# .end variables
-PORT=3000
-DB_HOST=mysql_db
-DB_PORT=3306
-DB_USERNAME=root
-DB_PASSWORD=
-DB_NAME=jokes_service_db
+# .env variables
+ - PORT=3000
+ - DB_HOST=mysql_db
+ - DB_PORT=3306
+ - DB_USERNAME=root
+ - DB_PASSWORD=
+ - DB_NAME=jokes_service_db
 
 ## Swagger API Documentation
 Access the Swagger UI to explore the API documentation:
