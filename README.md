@@ -57,7 +57,7 @@ $ npm run test:cov
  - DB_NAME=jokes_service_db
 
 ## Swagger API Documentation
-Access the Swagger UI to explore the API documentation:
+Once the serive is running, Access the Swagger UI to explore the API documentation:
 URL: http://localhost:3000/api
 
 ## Support
