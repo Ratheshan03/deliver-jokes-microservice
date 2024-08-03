@@ -1,23 +1,39 @@
-# Use the official Node.js image as a base
-FROM node:16-alpine
+FROM node:20-alpine AS development
+WORKDIR /usr/src/app
 
-# Set the working directory inside the container
-WORKDIR /app
+COPY --chown=node:node package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
-# Copy package.json and package-lock.json (if available)
-COPY package*.json ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
-# Install dependencies
-RUN npm install
+COPY --chown=node:node . .
+USER node
 
-# Copy the rest of the application code
-COPY . .
 
-# Build the application (if needed)
+FROM node:20-alpine AS build
+WORKDIR /usr/src/app
+COPY --chown=node:node package*.json ./
+COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
+COPY --chown=node:node . .
 RUN npm run build
 
-# Expose the port the app runs on
-EXPOSE 3000
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile --production && yarn cache clean --force; \
+  elif [ -f package-lock.json ]; then npm ci -f --only=production && npm cache clean --force; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile && pnpm store prune --force; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+  
+USER node
 
-# Start the application
-CMD ["npm", "run", "start:prod"]
+
+FROM node:20-alpine AS production
+ENV NODE_ENV production
+COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
+COPY --chown=node:node --from=build /usr/src/app/dist ./dist
+EXPOSE 3000
+CMD [ "node", "dist/main.js" ]

@@ -1,4 +1,7 @@
 node_modules
-dist
-.env
+test
+.gitignore
 .git
+.prettierrc
+Dockerfile
+README.md
